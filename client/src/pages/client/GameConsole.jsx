@@ -107,10 +107,10 @@ const GameConsole = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: user.id,
+          user_id: Number(user.id), // Đảm bảo là số
           game_name: activeGame.name,
-          score: finalScore,
-          time_elapsed: timeElapsed,
+          score: Number(finalScore), // Đảm bảo là số
+          time_elapsed: Number(timeElapsed), // Đảm bảo là số
         }),
       });
     } catch (err) {

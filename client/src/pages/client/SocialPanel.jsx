@@ -3,8 +3,8 @@ import "./GameConsole.css";
 
 const SocialPanel = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const [friends, setFriends] = useState([]);
-  const [requests, setRequests] = useState([]); // STATE MỚI: Chứa lời mời kết bạn
+  const [friends, setFriends] = useState([]); // Khởi tạo là mảng rỗng
+  const [requests, setRequests] = useState([]);
   const [searchUsername, setSearchUsername] = useState("");
   const [chatUser, setChatUser] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -15,7 +15,7 @@ const SocialPanel = () => {
   const pressTimer = useRef(null);
   const chatContainerRef = useRef(null);
 
-  // Tự động tải Bạn bè và Lời mời kết bạn mỗi 3 giây
+  // FIX LỖI TẢI DỮ LIỆU: Truy cập vào thuộc tính .data
   useEffect(() => {
     if (!user.id) return;
     const fetchSocialData = async () => {
@@ -24,9 +24,21 @@ const SocialPanel = () => {
           fetch(`http://localhost:5000/api/friends/${user.id}`),
           fetch(`http://localhost:5000/api/friends/requests/${user.id}`),
         ]);
-        if (fRes.ok) setFriends(await fRes.json());
-        if (rRes.ok) setRequests(await rRes.json());
-      } catch (err) {}
+
+        if (fRes.ok) {
+          const fData = await fRes.json();
+          // Kiểm tra nếu fData là đối tượng có thuộc tính data (do có phân trang)
+          setFriends(fData.data || []);
+        }
+
+        if (rRes.ok) {
+          const rData = await rRes.json();
+          setRequests(rData || []);
+        }
+      } catch (err) {
+        console.error("Lỗi fetch:", err);
+        setFriends([]); // Đảm bảo luôn là mảng nếu lỗi
+      }
     };
 
     fetchSocialData();
@@ -34,7 +46,7 @@ const SocialPanel = () => {
     return () => clearInterval(interval);
   }, [user.id]);
 
-  // Tự động tải tin nhắn
+  // Tải tin nhắn (Cũng sửa để nhận thuộc tính .data)
   useEffect(() => {
     if (!user.id || !chatUser) return;
     const fetchMessages = async () => {
@@ -43,8 +55,8 @@ const SocialPanel = () => {
           `http://localhost:5000/api/messages/${user.id}/${chatUser.id}`,
         );
         if (res.ok) {
-          const data = await res.json();
-          setMessages(data);
+          const result = await res.json();
+          setMessages(result.data || []); // API tin nhắn giờ trả về { data: [...] }
           if (chatContainerRef.current) {
             chatContainerRef.current.scrollTop =
               chatContainerRef.current.scrollHeight;
@@ -78,7 +90,6 @@ const SocialPanel = () => {
     }
   };
 
-  // --- LOGIC CHẤP NHẬN / TỪ CHỐI LỜI MỜI ---
   const acceptRequest = async (requestId) => {
     try {
       await fetch(`http://localhost:5000/api/friends/accept`, {
@@ -86,7 +97,6 @@ const SocialPanel = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ request_id: requestId }),
       });
-      // Giao diện sẽ tự động cập nhật lại ở lần quét 3 giây tiếp theo
       setRequests((prev) => prev.filter((r) => r.request_id !== requestId));
     } catch (err) {}
   };
@@ -100,7 +110,6 @@ const SocialPanel = () => {
     } catch (err) {}
   };
 
-  // --- LOGIC XÓA BẠN (NHẤN GIỮ) ---
   const handlePressStart = (friend) => {
     pressTimer.current = setTimeout(() => setUserToDelete(friend), 600);
   };
@@ -168,7 +177,6 @@ const SocialPanel = () => {
         KẾT BẠN & TRÒ CHUYỆN
       </h3>
 
-      {/* TÌM VÀ KẾT BẠN */}
       <div style={{ display: "flex", gap: "5px", marginBottom: "10px" }}>
         <input
           placeholder="Nhập tên tài khoản..."
@@ -213,7 +221,7 @@ const SocialPanel = () => {
         </div>
       )}
 
-      {/* HIỂN THỊ LỜI MỜI KẾT BẠN (Chỉ hiện khi có người mời) */}
+      {/* LỜI MỜI KẾT BẠN */}
       {requests.length > 0 && (
         <div
           style={{
@@ -509,7 +517,7 @@ const SocialPanel = () => {
         )}
       </div>
 
-      {/* POPUP XÁC NHẬN XÓA */}
+      {/* POPUP XÓA BẠN */}
       {userToDelete && (
         <div
           style={{

@@ -5,6 +5,7 @@ import {
   Route,
   Link,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import GameConsole from "./pages/client/GameConsole";
@@ -14,7 +15,6 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import SocialPanel from "./pages/client/SocialPanel";
 import "./App.css";
 
-// NÚT ĐĂNG XUẤT DÙNG CHUNG
 const LogoutButton = () => {
   const navigate = useNavigate();
   const handleLogout = () => {
@@ -40,7 +40,41 @@ const LogoutButton = () => {
   );
 };
 
-// LAYOUT NGƯỜI CHƠI
+// TÁCH RIÊNG PHẦN NỘI DUNG ĐỂ SỬ DỤNG USELOCATION
+const MainContent = ({ children }) => {
+  const location = useLocation();
+  // Kiểm tra nếu đang ở trang chủ (path là "/")
+  const isHomePage = location.pathname === "/";
+
+  return (
+    <main
+      className="main-content"
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        padding: "30px 20px",
+        overflow: "hidden",
+        justifyContent: "center",
+        alignItems: "stretch",
+        gap: "40px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flex: isHomePage ? "none" : "1",
+          justifyContent: "center",
+        }}
+      >
+        {children}
+      </div>
+
+      {/* CHỈ HIỆN SOCIAL PANEL KHI Ở TRANG CHỦ */}
+      {isHomePage && <SocialPanel />}
+    </main>
+  );
+};
+
 const ClientLayout = ({ children }) => {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
 
@@ -93,26 +127,7 @@ const ClientLayout = ({ children }) => {
         </div>
       </nav>
 
-      {/* KHU VỰC CHÍNH CỦA MÀN HÌNH */}
-      <main
-        className="main-content"
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          padding: "30px 20px",
-          overflow: "hidden",
-          justifyContent: "center",
-          alignItems:
-            "stretch" /* Tuyệt chiêu ép mép trên và mép dưới bằng chằn chặn */,
-          gap: "40px" /* Khoảng cách giữa máy Game và Chat */,
-        }}
-      >
-        {/* Máy Game hoặc Trang nội dung */}
-        {children}
-
-        {/* Khung Chat */}
-        <SocialPanel />
-      </main>
+      <MainContent>{children}</MainContent>
 
       <footer className="footer">
         2026 BOARD GAME PROJECT - WEB PROGRAMMING COURSE
@@ -121,7 +136,6 @@ const ClientLayout = ({ children }) => {
   );
 };
 
-// LAYOUT QUẢN TRỊ VIÊN
 const AdminLayout = ({ children }) => {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "dark");
@@ -171,8 +185,6 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-
-        {/* NHÓM ROUTE NGƯỜI DÙNG */}
         <Route
           path="/"
           element={
@@ -197,8 +209,6 @@ function App() {
             </ClientLayout>
           }
         />
-
-        {/* NHÓM ROUTE ADMIN */}
         <Route
           path="/admin"
           element={
