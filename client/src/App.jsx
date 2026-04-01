@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import Login from './pages/auth/Login';
 import GameConsole from './pages/client/GameConsole';
 import Profile from './pages/client/Profile';
 import Ranking from './pages/client/Ranking';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import SocialPanel from './pages/client/SocialPanel';
+import RatingPanel from './pages/client/RatingPanel'; // Import RatingPanel
 import './App.css';
 
-// NÚT ĐĂNG XUẤT 
 const LogoutButton = () => {
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     navigate('/login');
   };
   return (
@@ -21,7 +23,46 @@ const LogoutButton = () => {
   );
 };
 
-// LAYOUT NGƯỜI CHƠI 
+// --- KHUNG CHỨA TRANG CHỦ ---
+const MainContent = ({ children }) => {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/"; 
+
+  return (
+    <main style={{ 
+      display: 'flex', 
+      flexDirection: 'row', 
+      justifyContent: 'center', 
+      alignItems: 'center', /* Căn giữa theo chiều dọc */
+      gap: '20px', /* Khoảng cách hợp lý để vừa 3 cột */
+      width: '100%',
+      minHeight: '80vh',
+      padding: '20px'
+    }}>
+      
+      {/* CỘT 1: Khung chứa RatingPanel (Chỉ hiện ở Trang chủ) */}
+      {isHomePage && (
+        <div style={{ flex: '0 0 auto' }}>
+          <RatingPanel />
+        </div>
+      )}
+
+      {/* CỘT 2: Khung chứa GameConsole (Nằm giữa) */}
+      <div style={{ flex: '0 0 auto' }}>
+        {children}
+      </div>
+      
+      {/* CỘT 3: Khung chứa SocialPanel (Chỉ hiện ở Trang chủ) */}
+      {isHomePage && (
+        <div style={{ flex: '0 0 auto' }}>
+          <SocialPanel />
+        </div>
+      )}
+
+    </main>
+  );
+};
+
 const ClientLayout = ({ children }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
 
@@ -46,13 +87,14 @@ const ClientLayout = ({ children }) => {
           <LogoutButton />
         </div>
       </nav>
-      <main className="main-content">{children}</main>
+      
+      <MainContent>{children}</MainContent>
+
       <footer className="footer">2026 BOARD GAME PROJECT - WEB PROGRAMMING COURSE</footer>
     </div>
   );
 };
 
-// LAYOUT QUẢN TRỊ VIÊN
 const AdminLayout = ({ children }) => {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'dark');
@@ -67,7 +109,9 @@ const AdminLayout = ({ children }) => {
           <LogoutButton />
         </div>
       </nav>
-      <main className="main-content" style={{ alignItems: 'flex-start' }}>{children}</main>
+      <main className="main-content" style={{ alignItems: 'flex-start', padding: '20px' }}>
+        {children}
+      </main>
       <footer className="footer" style={{ background: '#0F172A', color: '#EF4444' }}>
         SYSTEM ADMINISTRATION - AUTHORIZED PERSONNEL ONLY
       </footer>
@@ -80,13 +124,9 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        
-        {/* NHÓM ROUTE NGƯỜI DÙNG */}
         <Route path="/" element={<ClientLayout><GameConsole /></ClientLayout>} />
         <Route path="/profile" element={<ClientLayout><Profile /></ClientLayout>} />
         <Route path="/ranking" element={<ClientLayout><Ranking /></ClientLayout>} />
-
-        {/* NHÓM ROUTE ADMIN */}
         <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
       </Routes>
     </BrowserRouter>
