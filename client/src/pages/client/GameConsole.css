@@ -1,0 +1,92 @@
+/* src/pages/client/GameConsole.css */
+.modern-console-system {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100vh; background-color: #0F172A; font-family: 'Segoe UI', sans-serif;
+  margin: 0; padding: 0; color: white; overflow: hidden; 
+}
+
+.display-wrapper {
+  background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
+  padding: 15px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  margin-bottom: 20px; position: relative; width: 320px; box-sizing: border-box;
+}
+
+.game-info-panel { text-align: center; margin-bottom: 12px; font-size: 1rem; }
+.player-name { color: #FB923C; font-weight: bold; }
+.turn-text { margin-left: 10px; font-size: 0.85rem; color: #94A3B8; }
+.turn-marker { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+.turn-marker.x { background-color: #38BDF8; }
+.turn-marker.o { background-color: #EF4444; }
+
+.modern-board { background-color: #1E293B; border-radius: 6px; border: 1px solid #334155; margin: 0 auto; }
+.modern-cell { background-color: #0F172A; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+.cell-content { font-weight: bold; line-height: 1; }
+.cell-content.x { color: #38BDF8; }
+.cell-content.o { color: #EF4444; }
+
+.modern-cell.cursor { outline: 2px solid #38BDF8; box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.5); z-index: 10; animation: cursorBlink 1s step-end infinite; }
+
+.menu-title { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 300px; font-size: 1.2rem; color: #94A3B8; letter-spacing: 2px; text-align: center; gap: 20px;}
+.menu-title strong { color: #FB923C; font-weight: 800; font-size: 1.5rem; }
+
+.victory-overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.95); border-radius: 12px; display: flex;
+  flex-direction: column; align-items: center; justify-content: center; z-index: 50; animation: fadeIn 0.4s ease-out;
+}
+.victory-text { font-size: 2.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 15px; text-align: center; animation: bloomText 1.5s ease-in-out infinite alternate; }
+.victory-text.x { color: #38BDF8; text-shadow: 0 0 15px #38BDF8, 0 0 30px #38BDF8; }
+.victory-text.o { color: #EF4444; text-shadow: 0 0 15px #EF4444, 0 0 30px #EF4444; }
+
+.modern-controller {
+  display: flex; flex-direction: column; align-items: center; background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 15px 25px; width: 320px; box-sizing: border-box;
+}
+.nav-menu-panel { gap: 60px; margin-bottom: 20px; justify-content: center; display: flex; }
+.d-pad-panel { gap: 12px; margin-bottom: 20px; justify-content: center; display: grid; grid-template-columns: 50px 50px 50px; grid-template-rows: 50px 50px; }
+.flat-btn { background-color: #1E293B; border-radius: 12px; border: 2px solid rgba(255, 255, 255, 0.1); cursor: pointer; color: rgba(255, 255, 255, 0.8); font-size: 1.4rem; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease; }
+.flat-btn:active { transform: translateY(2px); background-color: #0F172A; }
+.flat-action-btn { width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; color: white; font-weight: bold; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2); }
+.flat-action-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2); }
+.flat-btn-group { gap: 25px; margin-top: 0; display: flex; }
+.flat-action-btn.yellow { background-color: #FBBF24; }
+.flat-action-btn.red { background-color: #EF4444; }
+.flat-action-btn.blue { background-color: #3B82F6; }
+.btn-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.btn-label { font-size: 0.7rem; color: #94A3B8; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
+
+@keyframes bloomText { from { opacity: 0.8; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+@keyframes cursorBlink { 50% { opacity: 0.6; box-shadow: 0 0 1px #38BDF8; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Nút Save/Load nhỏ gọn trên góc */
+.sys-btn-group {
+  display: flex; gap: 10px; margin-top: 5px;
+}
+.sys-btn {
+  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #94A3B8; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;
+  cursor: pointer; transition: all 0.2s; font-weight: bold;
+}
+.sys-btn:hover { background: rgba(56, 189, 248, 0.2); color: white; border-color: #38BDF8; }
+
+/* Bảng Modal Hướng Dẫn (Help) */
+.help-modal-overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px);
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  z-index: 100; animation: fadeIn 0.2s ease-out;
+}
+.help-modal-box {
+  background: #1E293B; border: 1px solid #38BDF8; border-radius: 8px;
+  padding: 20px; width: 80%; max-width: 250px; text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.help-modal-title { color: #FB923C; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;}
+.help-modal-content { color: #E2E8F0; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px; text-align: left; }
+.help-modal-close {
+  background: #EF4444; border: none; color: white; padding: 8px 16px;
+  border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s;
+}
+.help-modal-close:hover { background: #DC2626; }
