@@ -275,30 +275,6 @@ const GameConsole = () => {
     return emptyCells[Math.floor(Math.random() * emptyCells.length)];
   };
 
-  const startGame = () => {
-    const game = GAME_LIST[menuIndex];
-    setActiveGame(game);
-    setBoardSize(game.initialSize);
-    setBoard(Array(game.initialSize * game.initialSize).fill(null));
-    setCursor(Math.floor((game.initialSize * game.initialSize) / 2));
-    setIsXNext(true);
-    setWinner(null);
-    setTimeElapsed(0);
-    setScore(0);
-    setSysMessage("");
-    setGameState("PLAYING");
-
-    if (["SNAKE", "MATCH3", "MEMORY"].includes(game.id)) {
-      setWinner("COMING_SOON");
-    }
-  };
-
-  const backToMenu = () => {
-    clearMessageOnAction();
-    setGameState("MENU");
-    setActiveGame(null);
-  };
-
   const moveCursor = (direction) => {
     if (showHelp) return;
     clearMessageOnAction();
@@ -330,13 +306,10 @@ const GameConsole = () => {
       startGame();
       return;
     }
-
-    // Đã có kết quả, bấm Enter để chơi lại ván mới
     if (winner) {
       startGame();
       return;
     }
-
     if (!isXNext) return;
 
     if (activeGame.id === "DRAWING") {
@@ -406,10 +379,33 @@ const GameConsole = () => {
     }, 400);
   };
 
+  const startGame = () => {
+    const game = GAME_LIST[menuIndex];
+    setActiveGame(game);
+    setBoardSize(game.initialSize);
+    setBoard(Array(game.initialSize * game.initialSize).fill(null));
+    setCursor(Math.floor((game.initialSize * game.initialSize) / 2));
+    setIsXNext(true);
+    setWinner(null);
+    setTimeElapsed(0);
+    setScore(0);
+    setSysMessage("");
+    setGameState("PLAYING");
+
+    if (["SNAKE", "MATCH3", "MEMORY"].includes(game.id)) {
+      setWinner("COMING_SOON");
+    }
+  };
+
+  const backToMenu = () => {
+    clearMessageOnAction();
+    setGameState("MENU");
+    setActiveGame(null);
+  };
+
   return (
     <div className="modern-console-system">
       <div className="display-wrapper">
-        {/* THÔNG TIN NGƯỜI CHƠI & LƯU/TẢI */}
         <div
           className="game-info-panel"
           style={{
@@ -470,7 +466,6 @@ const GameConsole = () => {
           </div>
         </div>
 
-        {/* THÔNG BÁO LƯU/TẢI */}
         <div
           style={{
             minHeight: "20px",
@@ -485,25 +480,36 @@ const GameConsole = () => {
           {sysMessage}
         </div>
 
-        {/* KHU VỰC CHÍNH (MENU HOẶC GAME) */}
         {gameState === "MENU" ? (
-          <div className="menu-title">
-            <span style={{ fontSize: "1rem", letterSpacing: "2px" }}>
-              CHỌN TRÒ CHƠI
-            </span>
-            {/* Đã thêm justifyContent: 'center' để khóa lỗi lệch dòng */}
+          <div className="menu-title" style={{ textAlign: "center" }}>
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "15px",
-                whiteSpace: "nowrap",
+                fontSize: "1rem",
+                letterSpacing: "2px",
+                marginBottom: "15px",
               }}
             >
-              <span style={{ color: "#94A3B8" }}>&lt;&lt;</span>
-              <strong>{GAME_LIST[menuIndex].name}</strong>
-              <span style={{ color: "#94A3B8" }}>&gt;&gt;</span>
+              CHỌN TRÒ CHƠI
+            </div>
+            <div
+              style={{
+                color: "#FB923C",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ color: "#94A3B8", marginRight: "15px" }}>
+                &lt;&lt;
+              </span>
+              {GAME_LIST[menuIndex].name}
+              <span style={{ color: "#94A3B8", marginLeft: "15px" }}>
+                &gt;&gt;
+              </span>
             </div>
           </div>
         ) : (
@@ -543,7 +549,6 @@ const GameConsole = () => {
               ))}
             </div>
 
-            {/* OVERLAY THÔNG BÁO KẾT THÚC GAME BASIC */}
             {winner && (
               <div
                 style={{
@@ -608,7 +613,7 @@ const GameConsole = () => {
           </div>
         )}
 
-        {/* HỘP THOẠI HƯỚNG DẪN CĂN GIỮA HOÀN HẢO */}
+        {/* HELP BOX ĐƯỢC ÉP GIỮA MÀN HÌNH */}
         {showHelp && (
           <div
             style={{
@@ -709,7 +714,6 @@ const GameConsole = () => {
         )}
       </div>
 
-      {/* CÁC NÚT ĐIỀU KHIỂN BÊN DƯỚI */}
       <div className="modern-controller">
         {gameState === "MENU" ? (
           <div className="nav-menu-panel">
