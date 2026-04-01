@@ -110,7 +110,7 @@ const Login = () => {
           )}
 
           <button type="submit" className="submit-btn">
-            {isLogin ? 'VÀO HỆ THỐNG' : 'TẠO TÀI KHOẢN'}
+            {isLogin ? 'Start Game' : 'TẠO TÀI KHOẢN'}
           </button>
         </form>
 

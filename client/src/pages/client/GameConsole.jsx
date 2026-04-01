@@ -33,17 +33,23 @@ const GameConsole = () => {
     if (sysMessage) setSysMessage('');
   };
 
-  // HÀM LƯU ĐIỂM THẬT VÀO BẢNG XẾP HẠNG
-  const saveScoreToRanking = (finalScore) => {
-    const currentRankings = JSON.parse(localStorage.getItem('rankings') || '[]');
-    currentRankings.push({
-      id: Date.now(),
-      player: user.username || 'Người chơi',
-      game: activeGame.name,
-      score: finalScore,
-      time: timeElapsed
-    });
-    localStorage.setItem('rankings', JSON.stringify(currentRankings));
+  const saveScoreToRanking = async (finalScore) => {
+    try {
+      if (!user || !user.id) return; 
+      
+      await fetch('http://localhost:5000/api/matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          game_name: activeGame.name,
+          score: finalScore,
+          time_elapsed: timeElapsed
+        })
+      });
+    } catch (err) {
+      console.log('Loi luu diem:', err);
+    }
   };
 
   const handleSaveGame = () => {
@@ -193,7 +199,10 @@ const GameConsole = () => {
     clearMessageOnAction();
 
     if (gameState === 'MENU') { startGame(); return; }
+    
+    // Đã có kết quả, bấm Enter để chơi lại ván mới
     if (winner) { startGame(); return; }
+    
     if (!isXNext) return; 
     
     if (activeGame.id === 'DRAWING') {
@@ -209,29 +218,24 @@ const GameConsole = () => {
     newBoard[cursor] = 'X';
     setBoard(newBoard);
     
-    // NGƯỜI CHƠI ĐÁNH
     const playerWin = checkWinner(newBoard, boardSize, cursor, activeGame.winCount);
     if (playerWin) { 
       setWinner('X'); setScore(100); 
-      setSysMessage('BẠN THẮNG - BẤM ENTER ĐỂ CHƠI VÁN MỚI'); 
       saveScoreToRanking(100);
       return; 
     }
     if (!newBoard.includes(null)) { 
       setWinner('DRAW'); setScore(10); 
-      setSysMessage('HÒA CỜ - BẤM ENTER ĐỂ CHƠI VÁN MỚI'); 
       saveScoreToRanking(10);
       return; 
     }
 
     setIsXNext(false); 
 
-    // MÁY ĐÁNH
     setTimeout(() => {
       const smartMove = findBestMove(newBoard, boardSize, activeGame.winCount);
       if (smartMove === null) { 
         setWinner('DRAW'); setScore(10); 
-        setSysMessage('HÒA CỜ - BẤM ENTER ĐỂ CHƠI VÁN MỚI'); 
         saveScoreToRanking(10);
         return; 
       }
@@ -242,12 +246,10 @@ const GameConsole = () => {
       const botWin = checkWinner(botBoard, boardSize, smartMove, activeGame.winCount);
       if (botWin) { 
         setWinner('O'); setScore(0); 
-        setSysMessage('MÁY THẮNG - BẤM ENTER ĐỂ PHỤC THÙ'); 
         saveScoreToRanking(0);
       } 
       else if (!botBoard.includes(null)) { 
         setWinner('DRAW'); setScore(10); 
-        setSysMessage('HÒA CỜ - BẤM ENTER ĐỂ CHƠI VÁN MỚI'); 
         saveScoreToRanking(10);
       } 
       else { 
@@ -286,8 +288,9 @@ const GameConsole = () => {
           </div>
         </div>
 
+        {/* Dòng text thông báo hệ thống (Chỉ dành cho Lưu/Tải) */}
         <div style={{ minHeight: '20px', textAlign: 'center', marginBottom: '10px', fontSize: '0.85rem', fontWeight: 'bold', color: '#FB923C', letterSpacing: '1px' }}>
-          {sysMessage ? sysMessage : winner === 'COMING_SOON' ? 'TÍNH NĂNG ĐANG CẬP NHẬT' : ''}
+          {sysMessage}
         </div>
         
         {gameState === 'MENU' ? (
@@ -300,25 +303,53 @@ const GameConsole = () => {
             </div>
           </div>
         ) : (
-          <div 
-            className="modern-board" 
-            style={{
-              display: 'grid', gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
-              gridTemplateRows: `repeat(${boardSize}, 1fr)`, width: '300px', height: '300px', gap: '1px'
-            }}
-          >
-            {board.map((cell, index) => (
-              <div key={index} className={`modern-cell ${gameState === 'PLAYING' && index === cursor ? 'cursor' : ''}`}>
-                {cell && (
-                  <span className={`cell-content ${cell === 'X' ? 'x' : 'o'}`} style={{ fontSize: `${Math.max(14, 200 / boardSize)}px` }}>
-                    {activeGame?.id === 'DRAWING' ? '█' : cell}
-                  </span>
+          <div style={{ position: 'relative', width: '300px', height: '300px', margin: '0 auto' }}>
+            <div 
+              className="modern-board" 
+              style={{
+                display: 'grid', gridTemplateColumns: `repeat(${boardSize}, 1fr)`,
+                gridTemplateRows: `repeat(${boardSize}, 1fr)`, width: '100%', height: '100%', gap: '1px'
+              }}
+            >
+              {board.map((cell, index) => (
+                <div key={index} className={`modern-cell ${gameState === 'PLAYING' && index === cursor ? 'cursor' : ''}`}>
+                  {cell && (
+                    <span className={`cell-content ${cell === 'X' ? 'x' : 'o'}`} style={{ fontSize: `${Math.max(14, 200 / boardSize)}px` }}>
+                      {activeGame?.id === 'DRAWING' ? '█' : cell}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* OVERLAY THÔNG BÁO KẾT THÚC GAME BASIC */}
+            {winner && (
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: '#0F172A', border: '2px solid #38BDF8',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                zIndex: 10
+              }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: winner === 'X' ? '#38BDF8' : winner === 'O' ? '#EF4444' : '#FBBF24', marginBottom: '15px' }}>
+                  {winner === 'COMING_SOON' ? 'ĐANG CẬP NHẬT' :
+                   winner === 'DRAW' ? 'HÒA CỜ' :
+                   winner === 'X' ? 'BẠN THẮNG' : 'MÁY THẮNG'}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#E2E8F0', marginBottom: '15px', fontWeight: 'bold' }}>
+                  {winner === 'COMING_SOON' ? 'QUAY LẠI SAU NHÉ' : 'BẤM ENTER ĐỂ TIẾP TỤC'}
+                </div>
+                {winner !== 'COMING_SOON' && (
+                  <div style={{ fontSize: '0.85rem', color: '#94A3B8' }}>
+                    ĐIỂM: <span style={{ color: '#FBBF24' }}>{score}</span> | THỜI GIAN: <span style={{ color: 'white' }}>{formatTime(timeElapsed)}</span>
+                  </div>
                 )}
               </div>
-            ))}
+            )}
           </div>
         )}
 
+        {/* Khung hướng dẫn chơi */}
         {showHelp && (
            <div style={{ position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', background: '#1E293B', border: '1px solid #38BDF8', padding: '15px', width: '220px', zIndex: 100, textAlign: 'center' }}>
              <div style={{ color: '#FB923C', fontWeight: 'bold', marginBottom: '10px' }}>
